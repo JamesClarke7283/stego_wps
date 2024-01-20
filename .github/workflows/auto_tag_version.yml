@@ -27,7 +27,7 @@ jobs:
           echo "TAG_EXISTS=true" >> $GITHUB_ENV
         else
           echo "TAG_EXISTS=false" >> $GITHUB_ENV
-
+        fi
     - name: Remove previous tag if exists
       if: env.TAG_EXISTS == 'true'
       run: |
