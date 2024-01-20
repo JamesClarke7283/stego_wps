@@ -1,3 +1,4 @@
+#![feature(test)]
 use log::{debug, warn};
 use std::collections::HashMap;
 use thiserror::Error;
@@ -191,19 +192,16 @@ pub fn compare(
         .map(|(i, c)| (c, i as isize + 1))
         .collect();
 
-    // Encode the secret message
-    let secret_encoded = encode(secret_message)
-        .map_err(|e| format!("Error encoding secret message: {:?}", e))?;
-
     // Encode the cover text
-    let cover_encoded = encode(cover_text)
-        .map_err(|e| format!("Error encoding cover text: {:?}", e))?;
+    let cover_encoded =
+        encode(cover_text).map_err(|e| format!("Error encoding cover text: {:?}", e))?;
 
     // Calculate the position of each character in the character set for the secret message
     let secret_positions = secret_message
         .chars()
         .map(|c| {
-            charset_map.get(&c)
+            charset_map
+                .get(&c)
                 .copied()
                 .ok_or_else(|| format!("Character '{}' not found in character set", c))
         })

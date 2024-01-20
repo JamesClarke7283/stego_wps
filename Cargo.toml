@@ -1,13 +1,23 @@
 [package]
 name = "stego_wps"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 description = "A library for text-based steganography using the Words Per Sentence (WPS) method. It allows encoding and decoding hidden messages within the structure of a given text."
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/JamesClarke7283/stego_wps"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "stego_wps"
+path = "src/lib.rs"
 
 [dependencies]
 log = "0.4.20"
 thiserror = "1.0.56"
+
+[dev-dependencies]
+criterion = {version="0.5",features=["html_reports"]}
+
+[[bench]]
+name = "benchmarks"
+path = "benches/benchmarks.rs"
+harness = false
