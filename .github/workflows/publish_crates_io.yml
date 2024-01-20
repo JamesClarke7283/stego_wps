@@ -1,7 +1,10 @@
 name: Auto Publish to crates.io
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Rust Clippy Lint"]
+    types:
+      - completed
     branches:
       - master
 

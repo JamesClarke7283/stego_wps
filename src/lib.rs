@@ -1,4 +1,4 @@
-#![feature(test)]
+
 use log::{debug, warn};
 use std::collections::HashMap;
 use thiserror::Error;
