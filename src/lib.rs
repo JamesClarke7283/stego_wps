@@ -18,6 +18,16 @@ pub enum DecodingError {
     InvalidCode(usize),
 }
 
+#[derive(Error, Debug)]
+pub enum CompareError {
+    #[error("Value out of range")]
+    ValueOutOfRange,
+    #[error("Error encoding cover text: {0}")]
+    EncodingError(#[from] EncodingError),
+    #[error("Character '{0}' not found in character set")]
+    CharacterNotFound(char),
+}
+
 /// Encodes a given text into a vector of word counts per sentence.
 ///
 /// This function performs text-based steganography using the Words Per Sentence (WPS) method.
@@ -145,7 +155,7 @@ pub fn decode(encoded: &[usize], character_set: &str) -> Result<String, Decoding
 
 /// Compares a secret message with a cover text to calculate the necessary changes in word count per sentence to encode the message.
 ///
-/// This function is part of a text-based steganography system using the Words Per Sentence (WPS) method.
+/// This function is a part of a text-based steganography system using the Words Per Sentence (WPS) method.
 /// It calculates the differences in word count needed for each sentence of the cover text to match the encoded form of the secret message.
 /// The function returns a vector where each element represents the change in the number of words required for a corresponding sentence
 /// in the cover text to encode a character of the secret message using the provided character set.
@@ -158,77 +168,69 @@ pub fn decode(encoded: &[usize], character_set: &str) -> Result<String, Decoding
 /// # Returns
 /// * `Ok(Vec<isize>)` - A vector of `isize` where each element represents the necessary change in word count for each sentence.
 ///    Positive values indicate additional words needed, while negative values indicate words to be removed.
-/// * `Err(String)` - An error message if encoding fails or if a character in the secret message is not found in the character set.
-///
-/// # Panics
-/// This function panics if a value conversion to `isize` is out of range, indicating a potential issue with very large values.
+/// * `Err(CompareError)` - An error if there is a problem in the comparison process, such as value out of range, encoding errors, or missing characters in the character set.
 ///
 /// # Errors
 /// This function returns an error if:
-/// - The cover text cannot be successfully encoded.
-/// - A character in the secret message is not found in the character set.
+/// - The cover text cannot be successfully encoded (`EncodingError`).
+/// - A character in the secret message is not found in the character set (`CharacterNotFound`).
+/// - Value conversion to `isize` is out of range (`ValueOutOfRange`).
 ///
 /// # Examples
 /// ```
 /// use stego_wps::compare;
+/// use stego_wps::CompareError;
 ///
 /// let secret_message = "HELLO";
 /// let cover_text = "This is a sentence. Another one here.";
 /// let character_set = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-/// let changes = compare(secret_message, cover_text, character_set).expect("Comparison failed");
-/// println!("Changes needed: {:?}", changes);
+/// match compare(secret_message, cover_text, character_set) {
+///     Ok(changes) => println!("Changes needed: {:?}", changes),
+///     Err(e) => eprintln!("Comparison failed: {:?}", e),
+/// }
 /// ```
 pub fn compare(
     secret_message: &str,
     cover_text: &str,
     character_set: &str,
-) -> Result<Vec<isize>, String> {
+) -> Result<Vec<isize>, CompareError> {
     if secret_message.is_empty() {
         return Ok(vec![]);
     }
 
-    // Create a HashMap from the character set for quick lookups
     let charset_map: HashMap<char, isize> = character_set
         .chars()
         .enumerate()
         .map(|(i, c)| {
-            isize::try_from(i).map_or(Err("Value out of range".to_string()), |val| {
-                Ok((c, val + 1))
-            })
+            isize::try_from(i).map_or(Err(CompareError::ValueOutOfRange), |val| Ok((c, val + 1)))
         })
-        .collect::<Result<HashMap<char, isize>, _>>()?;
+        .collect::<Result<_, _>>()?;
 
-    // Encode the cover text
-    let cover_encoded =
-        encode(cover_text).map_err(|e| format!("Error encoding cover text: {e:?}"))?;
+    let cover_encoded = encode(cover_text).map_err(CompareError::EncodingError)?;
 
-    // Calculate the position of each character in the character set for the secret message
     let secret_positions = secret_message
         .chars()
         .map(|c| {
             charset_map
                 .get(&c)
                 .copied()
-                .ok_or_else(|| format!("Character '{c}' not found in character set"))
+                .ok_or_else(|| CompareError::CharacterNotFound(c))
         })
         .collect::<Result<Vec<isize>, _>>()?;
 
-    // Calculate the changes needed
     let mut changes = vec![0; cover_encoded.len()];
     for (i, &pos) in secret_positions.iter().enumerate() {
         if i < cover_encoded.len() {
             changes[i] = pos
-                - isize::try_from(cover_encoded[i])
-                    .unwrap_or_else(|_| panic!("Value out of range for isize conversion"));
+                - isize::try_from(cover_encoded[i]).map_err(|_| CompareError::ValueOutOfRange)?;
         } else {
             changes.push(pos);
         }
     }
 
-    // Adjust for any extra sentences in the cover text
     for i in secret_positions.len()..cover_encoded.len() {
-        changes[i] = -(isize::try_from(cover_encoded[i])
-            .unwrap_or_else(|_| panic!("Value out of range for isize conversion")));
+        changes[i] =
+            -isize::try_from(cover_encoded[i]).map_err(|_| CompareError::ValueOutOfRange)?;
     }
 
     Ok(changes)
