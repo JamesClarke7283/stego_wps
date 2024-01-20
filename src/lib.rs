@@ -1,4 +1,5 @@
 use log::{debug, warn};
+use std::collections::HashMap;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
@@ -183,18 +184,28 @@ pub fn compare(
         return Ok(vec![]);
     }
 
+    // Create a HashMap from the character set for quick lookups
+    let charset_map: HashMap<char, isize> = character_set
+        .chars()
+        .enumerate()
+        .map(|(i, c)| (c, i as isize + 1))
+        .collect();
+
+    // Encode the secret message
+    let secret_encoded = encode(secret_message)
+        .map_err(|e| format!("Error encoding secret message: {:?}", e))?;
+
     // Encode the cover text
-    let cover_encoded =
-        encode(cover_text).map_err(|e| format!("Error encoding cover text: {:?}", e))?;
+    let cover_encoded = encode(cover_text)
+        .map_err(|e| format!("Error encoding cover text: {:?}", e))?;
 
     // Calculate the position of each character in the character set for the secret message
     let secret_positions = secret_message
         .chars()
         .map(|c| {
-            character_set.find(c).map_or(
-                Err(format!("Character '{}' not found in character set", c)),
-                |pos| Ok(pos as isize + 1),
-            )
+            charset_map.get(&c)
+                .copied()
+                .ok_or_else(|| format!("Character '{}' not found in character set", c))
         })
         .collect::<Result<Vec<isize>, _>>()?;
 

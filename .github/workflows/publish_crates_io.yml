@@ -1,0 +1,36 @@
+name: Auto Publish to crates.io
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+
+      - name: Check for version change in Cargo.toml
+        id: version-check
+        run: |
+          git fetch --depth=2
+          VERSION_OLD=$(git show HEAD^:./Cargo.toml | grep '^version' | sed 's/version = "\(.*\)"/\1/')
+          VERSION_NEW=$(grep '^version' ./Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+          if [ "$VERSION_OLD" != "$VERSION_NEW" ]; then
+            echo "Version changed from $VERSION_OLD to $VERSION_NEW"
+            echo "::set-output name=publish::true"
+          fi
+
+      - name: Publish to crates.io
+        if: steps.version-check.outputs.publish == 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: publish
+          args: --token ${{ secrets.CRATES_IO_TOKEN }}
