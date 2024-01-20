@@ -1,6 +1,3 @@
-Certainly! Below is a template for a `README.md` file for your project, "stego_wps". You can adjust it as needed to better fit your project's specifics:
-
-```markdown
 # Stego WPS
 
 ## About
