@@ -33,7 +33,6 @@ jobs:
 
       - name: Publish to crates.io
         if: steps.version-check.outputs.publish == 'true'
-        uses: actions-rs/cargo@v1
+        uses: katyo/publish-crates@v2
         with:
-          command: publish
-          args: --token ${{ secrets.CRATES_IO_TOKEN }}
+          registry-token: ${{ secrets.CRATES_IO_TOKEN }}
