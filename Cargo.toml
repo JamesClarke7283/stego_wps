@@ -1,15 +1,27 @@
 [package]
 name = "stego_wps"
-version = "1.0.3"
+version = "1.0.4"
 edition = "2021"
 description = "A library for text-based steganography using the Words Per Sentence (WPS) method. It allows encoding and decoding hidden messages within the structure of a given text."
-license = "LGPL-3.0-or-later"
 repository = "https://github.com/JamesClarke7283/stego_wps"
+license-file = "LICENSE"
+keywords = ["steganography", "steganographic", "encoding", "decoding", "words-per-sentence", "wps"]
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[lints.rust]
+unsafe_code = "forbid"
 
 [lints.clippy]
-# Enable pedantic and nursery lints as warnings
 pedantic = "warn"
 nursery = "warn"
+perf = "warn"
+style = "warn"
+complexity = "warn"
+suspicious = "warn"
+correctness = "warn"
+
 
 [lib]
 name = "stego_wps"

@@ -161,6 +161,9 @@ pub fn decode(encoded: &[usize], character_set: &str) -> Result<String, Decoding
 ///    Positive values indicate additional words needed, while negative values indicate words to be removed.
 /// * `Err(String)` - An error message if encoding fails or if a character in the secret message is not found in the character set.
 ///
+/// # Panics
+/// This function panics if a value conversion to `isize` is out of range, indicating a potential issue with very large values.
+///
 /// # Errors
 /// This function returns an error if:
 /// - The cover text cannot be successfully encoded.
@@ -189,8 +192,12 @@ pub fn compare(
     let charset_map: HashMap<char, isize> = character_set
         .chars()
         .enumerate()
-        .map(|(i, c)| (c, i as isize + 1))
-        .collect();
+        .map(|(i, c)| {
+            isize::try_from(i).map_or(Err("Value out of range".to_string()), |val| {
+                Ok((c, val + 1))
+            })
+        })
+        .collect::<Result<HashMap<char, isize>, _>>()?;
 
     // Encode the cover text
     let cover_encoded =
@@ -211,7 +218,9 @@ pub fn compare(
     let mut changes = vec![0; cover_encoded.len()];
     for (i, &pos) in secret_positions.iter().enumerate() {
         if i < cover_encoded.len() {
-            changes[i] = pos - cover_encoded[i] as isize;
+            changes[i] = pos
+                - isize::try_from(cover_encoded[i])
+                    .unwrap_or_else(|_| panic!("Value out of range for isize conversion"));
         } else {
             changes.push(pos);
         }
@@ -219,7 +228,8 @@ pub fn compare(
 
     // Adjust for any extra sentences in the cover text
     for i in secret_positions.len()..cover_encoded.len() {
-        changes[i] = -(cover_encoded[i] as isize);
+        changes[i] = -(isize::try_from(cover_encoded[i])
+            .unwrap_or_else(|_| panic!("Value out of range for isize conversion")));
     }
 
     Ok(changes)
