@@ -3,7 +3,7 @@ use log::{debug, warn};
 use std::collections::HashMap;
 use thiserror::Error;
 
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug, PartialEq, Eq)]
 pub enum EncodingError {
     #[error("input must be ASCII string")]
     NonAsciiInput,
@@ -194,7 +194,7 @@ pub fn compare(
 
     // Encode the cover text
     let cover_encoded =
-        encode(cover_text).map_err(|e| format!("Error encoding cover text: {:?}", e))?;
+        encode(cover_text).map_err(|e| format!("Error encoding cover text: {e:?}"))?;
 
     // Calculate the position of each character in the character set for the secret message
     let secret_positions = secret_message
@@ -203,7 +203,7 @@ pub fn compare(
             charset_map
                 .get(&c)
                 .copied()
-                .ok_or_else(|| format!("Character '{}' not found in character set", c))
+                .ok_or_else(|| format!("Character '{c}' not found in character set"))
         })
         .collect::<Result<Vec<isize>, _>>()?;
 
