@@ -1,5 +1,11 @@
 # Stego WPS
 
+[![Crates.io](https://img.shields.io/crates/v/stego_wps)](https://crates.io/crates/stego_wps)
+[![Downloads](https://img.shields.io/crates/d/stego_wps.svg)](https://crates.io/crates/stego_wps)
+[![Documentation](https://docs.rs/stego_wps/badge.svg)](https://docs.rs/stego_wps)
+[![License](https://img.shields.io/crates/l/stego_wps)](https://crates.io/crates/stego_wps)
+[![Dependency Status](https://deps.rs/repo/github/JamesClarke7283/stego_wps/status.svg)](https://deps.rs/repo/github/JamesClarke7283/stego_wps)
+
 ## About
 Stego WPS is a Rust library designed for text-based steganography using the Words Per Sentence (WPS) method. It enables the encoding and decoding of hidden messages within the structure of a given text, offering a unique approach to conceal information in plain sight.
 
