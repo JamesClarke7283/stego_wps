@@ -20,7 +20,7 @@ To use Stego WPS in your Rust project, add the following to your `Cargo.toml` fi
 
 ```toml
 [dependencies]
-stego_wps = "1.0.0"
+stego_wps = "1"
 ```
 
 ## Usage
