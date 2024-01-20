@@ -1,0 +1,42 @@
+name: Auto Tag Version
+
+on:
+  push:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  auto-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Extract version from Cargo.toml
+      id: cargo-version
+      run: |
+        VERSION=$(grep '^version =' Cargo.toml | sed -E 's/^version = "(.*)"/\1/')
+        echo "CARGO_VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Check if tag exists
+      id: check-tag
+      run: |
+        if git rev-parse "v$CARGO_VERSION" >/dev/null 2>&1; then
+          echo "TAG_EXISTS=true" >> $GITHUB_ENV
+        else
+          echo "TAG_EXISTS=false" >> $GITHUB_ENV
+
+    - name: Remove previous tag if exists
+      if: env.TAG_EXISTS == 'true'
+      run: |
+        git tag -d "v$CARGO_VERSION"
+        git push origin :"v$CARGO_VERSION"
+
+    - name: Create new tag
+      run: |
+        git tag "v$CARGO_VERSION"
+        git push origin "v$CARGO_VERSION"
