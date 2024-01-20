@@ -17,31 +17,24 @@ jobs:
         fetch-depth: 0
 
     - name: Extract version from Cargo.toml
-      id: cargo-version
       run: |
         VERSION=$(grep '^version =' Cargo.toml | sed -E 's/^version = "(.*)"/\1/')
         echo "CARGO_VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Check if tag exists
       run: |
-        if git rev-parse "v$CARGO_VERSION" >/dev/null 2>&1; then
+        if git rev-parse "v${{ env.CARGO_VERSION }}" >/dev/null 2>&1; then
           echo "TAG_EXISTS=true" >> $GITHUB_ENV
         else
           echo "TAG_EXISTS=false" >> $GITHUB_ENV
-      shell: /usr/bin/bash -e {0}
-      env:
-        CARGO_TERM_COLOR: always
-        CARGO_VERSION: 1.0.9
-
-
 
     - name: Remove previous tag if exists
       if: env.TAG_EXISTS == 'true'
       run: |
-        git tag -d "v$CARGO_VERSION"
-        git push origin :"v$CARGO_VERSION"
+        git tag -d "v${{ env.CARGO_VERSION }}"
+        git push origin :"v${{ env.CARGO_VERSION }}"
 
     - name: Create new tag
       run: |
-        git tag "v$CARGO_VERSION"
-        git push origin "v$CARGO_VERSION"
+        git tag "v${{ env.CARGO_VERSION }}"
+        git push origin "v${{ env.CARGO_VERSION }}"
