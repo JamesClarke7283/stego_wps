@@ -23,7 +23,6 @@ jobs:
         echo "CARGO_VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Check if tag exists
-      id: check-tag
       run: |
         if git rev-parse "v$CARGO_VERSION" >/dev/null 2>&1; then
           echo "TAG_EXISTS=true" >> $GITHUB_ENV
@@ -33,6 +32,7 @@ jobs:
       env:
         CARGO_TERM_COLOR: always
         CARGO_VERSION: 1.0.9
+
 
 
     - name: Remove previous tag if exists
