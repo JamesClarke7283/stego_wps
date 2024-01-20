@@ -1,10 +1,15 @@
 [package]
 name = "stego_wps"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 description = "A library for text-based steganography using the Words Per Sentence (WPS) method. It allows encoding and decoding hidden messages within the structure of a given text."
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/JamesClarke7283/stego_wps"
+
+[lints.clippy]
+# Enable pedantic and nursery lints as warnings
+pedantic = "warn"
+nursery = "warn"
 
 [lib]
 name = "stego_wps"
@@ -18,6 +23,24 @@ thiserror = "1.0.56"
 criterion = {version="0.5",features=["html_reports"]}
 
 [[bench]]
-name = "benchmarks"
+name = "all"
 path = "benches/benchmarks.rs"
+harness = false
+
+[[bench]]
+name = "compare"
+path = "benches/compare.rs"
+harness = false
+
+
+[[bench]]
+name = "decode"
+path = "benches/decode.rs"
+harness = false
+
+
+
+[[bench]]
+name = "encode"
+path = "benches/encode.rs"
 harness = false
